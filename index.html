@@ -189,7 +189,9 @@
   .dc-wait .t { color: #ff8a96; }
   .dc-wait p { font-size: 16px; color: #f3f5fa; margin: 4px 0 0; }
   .dc-wait b { color: #ff8a96; }
-  .dc-case { margin-top: 14px; display: grid; grid-template-columns: 46px 1fr; gap: 14px; align-items: center; }
+  .dc-case { margin-top: 14px; display: grid; grid-template-columns: 46px 1fr; gap: 14px; align-items: center; color: inherit; text-decoration: none; }
+  a.dc-case:hover { border-color: #ffb35c; }
+  .dc-case .more { display: inline-block; margin-top: 6px; font: 700 13px Manrope; color: #ffb35c; }
   .dc-case .avatar { width: 46px; height: 46px; font-size: 16px; }
   .dc-case b { display: block; font-size: 15px; }
   .dc-case p { margin: 2px 0 0; font-size: 14px; color: #c5cbd8; }
@@ -629,10 +631,10 @@ function result() {
       <div class="t">Что мешало начать: ${esc(low1(S.barrier.t))}</div>
       <p style="font-size:15px;color:#e4e7ef;margin:0">${esc(S.barrier.a(rub(monthMoney), topName))}</p>
     </div>
-    <div class="dc-box dc-case">
+    <a class="dc-box dc-case" id="dcCase" href="${st.url}" target="_blank" rel="noopener">
       <div class="avatar">${esc(st.n[0])}</div>
-      <div><div class="t" style="margin-bottom:4px">Это уже сделали выпускники</div><b>${esc(st.n)} · ${esc(st.r)} — ${esc(st.t)}</b><p><i>${quoteQ(st.q)}</i></p></div>
-    </div>
+      <div><div class="t" style="margin-bottom:4px">Это уже сделали выпускники</div><b>${esc(st.n)} · ${esc(st.r)} — ${esc(st.t)}</b><p><i>${quoteQ(st.q)}</i></p><span class="more">Смотреть кейс →</span></div>
+    </a>
     <div class="dc-cta" id="dcCta">
       <h5>Разберём вашу карту за 15 минут</h5>
       <p>Напишите нам в Telegram кодовое слово «КАРТА» — подберём, с какого дела начать именно вам. Без давления и обязательств.</p>
@@ -708,6 +710,9 @@ $('dlPdf').onclick = async () => {
   // плашка «Разберём карту» в PDF кликается и ведёт в Telegram
   const card = $('dcard'), cta = $('dcCta'), k = w / card.offsetWidth;
   pdf.link(cta.offsetLeft * k, cta.offsetTop * k, cta.offsetWidth * k, cta.offsetHeight * k, { url: KARTA_URL });
+  // и кейс выпускника открывается прямо из PDF
+  const cs = $('dcCase');
+  pdf.link(cs.offsetLeft * k, cs.offsetTop * k, cs.offsetWidth * k, cs.offsetHeight * k, { url: cs.href });
   pdf.save(fileName('pdf'));
 };
 </script>
