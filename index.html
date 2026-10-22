@@ -2,8 +2,14 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Тест на 3 минуты: соберите свой рабочий понедельник и посмотрите, каким он станет через 3 месяца, когда рутину забирает нейросеть. В конце — письмо от себя из будущего и личная диагностическая карта.">
+<meta property="og:title" content="Машина времени — ваш понедельник через 3 месяца">
+<meta property="og:description" content="Тест на 3 минуты: соберите свой рабочий понедельник и посмотрите, каким он станет через 3 месяца, когда рутину забирает нейросеть. В конце — письмо от себя из будущего и личная диагностическая карта.">
+<meta name="theme-color" content="#080a12">
 <title>Машина времени</title>
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
@@ -698,9 +704,24 @@ async function cardCanvas() {
   return html2canvas($('dcard'), { scale: 2, backgroundColor: '#0b0d17', useCORS: true, onclone: d => { d.getElementById('dcard').style.transform = 'none'; } });
 }
 const fileName = ext => `Диагностическая карта · Машина времени.${ext}`;
+/* в артефакте Claude сохраняем через окно сохранения, на обычном сайте — скачиваем напрямую */
+const dlReady = (window.claude && window.claude.use) ? window.claude.use('downloads').catch(() => null) : Promise.resolve(null);
+async function saveBlob(filename, blob) {
+  const dl = await dlReady;
+  if (dl) {
+    try { await dl.save({ filename, data: blob }); toast('<b>Карта сохранена ✓</b>'); return; }
+    catch (err) {
+      if (err && err.code === 'declined') return;
+      if (err && err.code === 'rate_limited') { toast('Окно сохранения уже открыто — попробуйте через пару секунд.'); return; }
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
 $('dlPng').onclick = async () => {
   const c = await cardCanvas(); if (!c) return;
-  const a = document.createElement('a'); a.href = c.toDataURL('image/png'); a.download = fileName('png'); a.click();
+  c.toBlob(b => saveBlob(fileName('png'), b), 'image/png');
 };
 $('dlPdf').onclick = async () => {
   const c = await cardCanvas(); if (!c || !window.jspdf) return;
@@ -713,7 +734,7 @@ $('dlPdf').onclick = async () => {
   // и кейс выпускника открывается прямо из PDF
   const cs = $('dcCase');
   pdf.link(cs.offsetLeft * k, cs.offsetTop * k, cs.offsetWidth * k, cs.offsetHeight * k, { url: cs.href });
-  pdf.save(fileName('pdf'));
+  saveBlob(fileName('pdf'), pdf.output('blob'));
 };
 </script>
 </body>
